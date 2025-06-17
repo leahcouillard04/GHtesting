@@ -170,6 +170,7 @@
   <div class="tabs">
     <button class="tab active" onclick="showTab('place-order')">Place Order</button>
     <button class="tab" onclick="showTab('dashboard')">Dashboard</button>
+    <button class = "tab" onclick="showTab('modify-order')">Modify Order</button>
   </div>
 
   <!-- PLACE ORDER TAB -->
@@ -215,6 +216,36 @@
       
       <div id="orders-loading" class="loading">Loading orders...</div>
       <div id="orders-container"></div>
+    </div>
+  </div>
+
+  <!--MODIFY ORDER TAB-->
+  <div id = "modify-order" class="tab-content">
+    <div class = "container">
+      <h2> Modify Order</h2>
+
+      <section>
+        <label for = "modify-order-id">Select Order ID</label>
+        <select id = "modidy-order-id">
+          <option value="">Loading orders...</option>
+        </select>
+      </section>
+
+      <section>
+        <label for="modify-location">Delivery Location</label>
+        <select id="location-modify">
+          <option value="">Loading locations...</option>
+        </select>
+      </section>
+
+      <section>
+        <label for="modify-datetime">New Preferred Arrival Date & Time </label>
+        <input type="datetime-local" id="modify-datetime">
+      </section>
+
+      <button id="submit-button">Update Order</button>
+
+      <div id="modify-result"></div>
     </div>
   </div>
 
