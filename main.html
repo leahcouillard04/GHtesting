@@ -23,8 +23,8 @@
     }
 
     h1 {
-      color: #0078a0;
-      border-bottom: 3px solid #0078a0;
+      color: #0f6135;
+      border-bottom: 3px solid #0f6135;
       padding-bottom: 0.5rem;
     }
 
@@ -49,8 +49,8 @@
     }
 
     .tab.active {
-      border-bottom-color: #0078a0;
-      color: #0078a0;
+      border-bottom-color: #0f6135;
+      color: #0f6135;
       font-weight: bold;
     }
 
@@ -79,8 +79,8 @@
 
     button {
       padding: 0.75rem 1.5rem;
-      background: #0078a0;
-      color: white;
+      background: #0f6135;
+      color: #abdaba;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -88,7 +88,7 @@
     }
 
     button:hover {
-      background: #005a7a;
+      background: #0a4626;
     }
 
     button:disabled {
@@ -171,6 +171,8 @@
     <button class="tab active" onclick="showTab('place-order')">Place Order</button>
     <button class="tab" onclick="showTab('dashboard')">Dashboard</button>
     <button class = "tab" onclick="showTab('modify-order')">Modify Order</button>
+    <button class = "tab" onclick ="showTab('containers')">Container Information</button>
+    <button class = "tab" onclick ="showTab('drone')">Drone Information</button>
   </div>
 
   <!-- PLACE ORDER TAB -->
@@ -226,14 +228,14 @@
 
       <section>
         <label for = "modify-order-id">Select Order ID</label>
-        <select id = "modidy-order-id">
+        <select id = "modify-order-id">
           <option value="">Loading orders...</option>
         </select>
       </section>
 
       <section>
         <label for="modify-location">Delivery Location</label>
-        <select id="location-modify">
+        <select id="modify-location">
           <option value="">Loading locations...</option>
         </select>
       </section>
@@ -243,9 +245,23 @@
         <input type="datetime-local" id="modify-datetime">
       </section>
 
-      <button id="submit-button">Update Order</button>
+      <button id="update-order-button">Update Order</button>
 
       <div id="modify-result"></div>
+    </div>
+  </div>
+
+  <!--CONTAINER SELECTION TAB-->
+  <div id = "containers" class = "tab-content">
+    <div class = "container" >
+      <h2>Container Information</h2>
+    </div>
+  </div>
+
+  <!--DRONE SELECTION TAB-->
+  <div id = "drone" class = "tab-content"> 
+    <div class = "container">
+      <h2>Drone Information</h2>
     </div>
   </div>
 
@@ -306,6 +322,44 @@
         showMessage('error', 'Failed to load products');
       }
     }
+
+    // MODIFY ORDER FUNCTIONALITY
+document.getElementById('update-order-button').addEventListener('click', async function () {
+  const orderId = document.getElementById('modify-order-id').value;
+  const newLocation = document.getElementById('location-modify').value;
+  const newDatetime = document.getElementById('modify-datetime').value;
+
+  if (!orderId || !newLocation || !newDatetime) {
+    showMessage('error', 'Please fill in all fields to update the order');
+    return;
+  }
+
+  const updateData = {
+    delivery_location: newLocation,
+    arrival_time: new Date(newDatetime).toISOString()
+  };
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/routes/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showMessage('success', `Order ${orderId} successfully updated.`);
+      loadOrders();
+    } else {
+      showMessage('error', data.message || 'Update failed');
+    }
+  } catch (error) {
+    console.error('Update error:', error);
+    showMessage('error', 'Network error. Please try again.');
+  }
+});
+
 
     // Load locations from backend
     async function loadLocations() {
@@ -441,7 +495,7 @@
         const data = await response.json();
         
         if (data.success) {
-          showMessage('success', `Order created successfully! Route ID: ${data.data.route_id}. ${data.data.drone_count} drones assigned with total capacity of ${data.data.total_weight}kg.`);
+          showMessage('success', `Order created successfully! Order ID: ${data.data.route_id}`);
           
           // Clear form
           document.getElementById('item-select').value = '';
@@ -528,10 +582,10 @@
       resultDiv.innerHTML = message;
       resultDiv.style.display = 'block';
       
-      // Auto-hide after 5 seconds
+      // Auto-hide after 30 seconds
       setTimeout(() => {
         resultDiv.style.display = 'none';
-      }, 5000);
+      }, 3000);
     }
   </script>
 
