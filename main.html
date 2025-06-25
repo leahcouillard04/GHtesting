@@ -255,6 +255,10 @@
   <div id = "containers" class = "tab-content">
     <div class = "container" >
       <h2>Container Information</h2>
+      <button onclick="loadContainers()" style="margin-bottom: 1rem;">Refresh Orders</button>
+      
+      <div id="containers-loading" class="loading">Loading orders...</div>
+      <div id="containers-container"></div>
     </div>
   </div>
 
@@ -270,12 +274,14 @@
     let products = [];
     let locations = [];
     let orders = [];
+    let containers = []; 
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', function() {
       loadProducts();
       loadLocations();
       loadOrders();
+      loadContainers(); 
       
       // Set default datetime to 1 hour from now
       const now = new Date();
@@ -385,6 +391,36 @@ document.getElementById('update-order-button').addEventListener('click', async f
       }
     }
 
+    //Load orders for container dashboard 
+    async function loadContainers(){
+      const loadingDiv = document.getElementById('containers-loading');
+      const containerDiv = document.getElementById('containers-container');
+
+      loadingDiv.style.display = 'block';
+      containerDiv.innerHTML = '';
+
+      try {
+        const response = await fetch('http://localhost:3000/api/routes');
+        const data = await response.json();
+        
+        loadingDiv.style.display = 'none';
+        
+        if (data.success && data.data.length > 0) {
+          containers = data.data;
+          //displayOrders(orders);
+          displayContainers(containers); 
+        } else {
+          containerDiv.innerHTML = '<p>No orders found. Create your first order!</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+        loadingDiv.style.display = 'none';
+        containerDiv.innerHTML = '<div class="error">Failed to load orders</div>';
+      }
+      
+    
+    }
+
     // Load orders for dashboard
     async function loadOrders() {
       const loadingDiv = document.getElementById('orders-loading');
@@ -455,6 +491,42 @@ document.getElementById('update-order-button').addEventListener('click', async f
       `;
       
       container.appendChild(table);
+    }
+
+    function displayContainers(containers){
+      const container = document.getElementById('containers-container');
+      
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Container ID</th>
+            <th>Location</th>
+            <th>Order ID</th>
+            <th>Drone ID</th>
+            <th>Battery Percentage</th>
+            <th>Refrigerated</th>
+            <th>Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${containers.map(cont => `
+            <tr>
+              <td>#${cont.cont_id}</td>
+              <td>${cont.delivery_location}</td>
+              <td>#${cont.order_id}</td>
+              <td>#${cont.drone_id}</td>
+              <td>${cont.battery_percentage}%</td> 
+              <td>${cont.refrigerated ? 'Yes' : 'No'}</td>
+              <td>${cont.units}</td>
+
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+      
+      container.appendChild(table);
+
     }
 
     // Submit order
@@ -591,3 +663,4 @@ document.getElementById('update-order-button').addEventListener('click', async f
 
 </body>
 </html>
+
