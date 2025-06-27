@@ -254,7 +254,7 @@
   <!--CONTAINER SELECTION TAB-->
   <div id = "containers" class = "tab-content">
     <div class = "container" >
-      <h2>Container Information</h2>
+      <h2>Container Overview</h2>
       <button onclick="loadContainers()" style="margin-bottom: 1rem;">Refresh Orders</button>
       
       <div id="containers-loading" class="loading">Loading orders...</div>
@@ -265,7 +265,11 @@
   <!--DRONE SELECTION TAB-->
   <div id = "drone" class = "tab-content"> 
     <div class = "container">
-      <h2>Drone Information</h2>
+      <h2>Drone Overview</h2>
+      <button onclick="loadDrones()" style="margin-bottom: 1rem;">Refresh Orders</button>
+      
+      <div id="drones-loading" class="loading">Loading orders...</div>
+      <div id="drones-container"></div>
     </div>
   </div>
 
@@ -275,6 +279,7 @@
     let locations = [];
     let orders = [];
     let containers = []; 
+    let drones = []; 
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', function() {
@@ -282,6 +287,7 @@
       loadLocations();
       loadOrders();
       loadContainers(); 
+      loadDrones(); 
       
       // Set default datetime to 1 hour from now
       const now = new Date();
@@ -421,6 +427,35 @@ document.getElementById('update-order-button').addEventListener('click', async f
     
     }
 
+    //load orders for drone page
+    async function loadContainers(){
+      const loadingDiv = document.getElementById('drones-loading');
+      const containerDiv = document.getElementById('drones-container');
+
+      loadingDiv.style.display = 'block';
+      containerDiv.innerHTML = '';
+
+      try {
+        const response = await fetch('http://localhost:3000/api/routes');
+        const data = await response.json();
+        
+        loadingDiv.style.display = 'none';
+        
+        if (data.success && data.data.length > 0) {
+          containers = data.data;
+          displayDrones(drones); 
+        } else {
+          containerDiv.innerHTML = '<p>No orders found. Create your first order!</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+        loadingDiv.style.display = 'none';
+        containerDiv.innerHTML = '<div class="error">Failed to load orders</div>';
+      }
+      
+    
+    }
+
     // Load orders for dashboard
     async function loadOrders() {
       const loadingDiv = document.getElementById('orders-loading');
@@ -493,6 +528,7 @@ document.getElementById('update-order-button').addEventListener('click', async f
       container.appendChild(table);
     }
 
+    //to display the container page info in a table 
     function displayContainers(containers){
       const container = document.getElementById('containers-container');
       
@@ -519,6 +555,43 @@ document.getElementById('update-order-button').addEventListener('click', async f
               <td>${cont.battery_percentage}%</td> 
               <td>${cont.refrigerated ? 'Yes' : 'No'}</td>
               <td>${cont.units}</td>
+
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+      
+      container.appendChild(table);
+
+    }
+
+    //to display drone page on table 
+    function displayDrones(drones){
+      const drone = document.getElementById('drones-container');
+      
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Drone ID</th>
+            <th>Route</th>
+            <th>Location</th>
+            <th>Battery Percentage</th>
+            <th>Departure Time</th>
+            <th>Arrival Time</th>
+            <th>Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${drones.map(drone => `
+            <tr>
+              <td>#${drone.drone_id}</td>
+              <td>${drone.route}</td>
+              <td>#${drone.delivery_location}</td>
+              <td>#${drone.battery_percentage}</td>
+              <td>${drone.estimated_departure}%</td>
+              <td>${drone.estimated_arrival || 'Not set'}</td> 
+              <td>${drone.units}</td>
 
             </tr>
           `).join('')}
@@ -663,4 +736,3 @@ document.getElementById('update-order-button').addEventListener('click', async f
 
 </body>
 </html>
-
